@@ -1,0 +1,12 @@
+const { generateOTP, storeOTP, verifyOTP } = require('./src/lib/otp.ts');
+console.log('Testing OTP module...');
+const otp = generateOTP();
+console.log('Generated OTP:', otp, '(length:', otp.length, ')');
+storeOTP('test-session', otp);
+const result1 = verifyOTP('test-session', '000000');
+console.log('Wrong code:', JSON.stringify(result1));
+const result2 = verifyOTP('test-session', otp);
+console.log('Correct code:', JSON.stringify(result2));
+const result3 = verifyOTP('test-session', otp);
+console.log('Reuse code:', JSON.stringify(result3));
+console.log('OTP module OK!');

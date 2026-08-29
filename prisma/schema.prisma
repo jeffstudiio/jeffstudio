@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./db/custom.db"
+}
+
+model Category {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  titleFa     String
+  titleEn     String
+  descriptionFa String?
+  descriptionEn String?
+  coverImage  String?
+  videoUrl    String?
+  order       Int          @default(0)
+  subcategories SubCategory[]
+  projects    Project[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model SubCategory {
+  id          String     @id @default(cuid())
+  slug        String
+  titleFa     String
+  titleEn     String
+  order       Int        @default(0)
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  projects    Project[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([slug, categoryId])
+}
+
+model Project {
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  titleFa       String
+  titleEn       String
+  descriptionFa String?
+  descriptionEn String?
+  clientFa      String?
+  clientEn      String?
+  locationFa    String?
+  locationEn    String?
+  year          String?
+  status        String         @default("published")
+  order         Int            @default(0)
+  categoryId    String
+  category      Category       @relation(fields: [categoryId], references: [id])
+  subcategoryId String?
+  subcategory   SubCategory?   @relation(fields: [subcategoryId], references: [id])
+  images        ProjectImage[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model ProjectImage {
+  id        String   @id @default(cuid())
+  url       String
+  altFa     String?
+  altEn     String?
+  isCover   Boolean  @default(false)
+  isVideo   Boolean  @default(false)
+  order     Int      @default(0)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  titleFa     String
+  titleEn     String
+  descFa      String
+  descEn      String
+  priceFa     String
+  priceEn     String
+  iconSvg     String
+  featuresFa  String
+  featuresEn  String
+  noteFa      String   @default("")
+  noteEn      String   @default("")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  updatedAt DateTime @updatedAt
+}
+
+model AboutInfo {
+  id             String   @id @default(cuid())
+  profilePhoto   String   @default("")
+  bioFa          String   @default("")
+  bioEn          String   @default("")
+  subtitleFa     String   @default("")
+  subtitleEn     String   @default("")
+  skillsJson     String   @default("[]")
+  statsJson      String   @default("[]")
+  experienceJson String   @default("[]")
+  educationJson  String   @default("[]")
+  updatedAt      DateTime @updatedAt
+}
+
+model ContactInfo {
+  id             String   @id @default(cuid())
+  titleFa        String   @default("")
+  titleEn        String   @default("")
+  descFa         String   @default("")
+  descEn         String   @default("")
+  addressFa      String   @default("")
+  addressEn      String   @default("")
+  phone          String   @default("")
+  email          String   @default("")
+  whatsapp       String   @default("")
+  telegram       String   @default("")
+  socialsJson    String   @default("[]")
+  updatedAt      DateTime @updatedAt
+}
+
+model Message {
+  id           String   @id @default(cuid())
+  name         String
+  email        String
+  phone        String   @default("")
+  message      String
+  serviceIndex Int?
+  isRead       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}

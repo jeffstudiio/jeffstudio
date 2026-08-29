@@ -1,0 +1,30 @@
+# JEFF studio - robots.txt
+# https://jeffstudio.ir
+
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Twitterbot
+Allow: /
+Allow: /uploads/
+
+User-agent: facebookexternalhit
+Allow: /
+Allow: /uploads/
+
+# Block admin and API routes from crawling
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+# Sitemap
+Sitemap: https://jeffstudio.ir/sitemap.xml
+
+# Allow crawlers to access uploaded content
+Allow: /uploads/
