@@ -37,7 +37,7 @@ const navItems: NavItem[] = [
 ];
 
 // ─── Step 1: Password ───
-function PasswordStep({ lang, onSubmit }: { lang: 'fa' | 'en'; onSubmit: (sessionId: string) => void }) {
+function PasswordStep({ lang, onSubmit }: { lang: 'fa' | 'en'; onSubmit: (sessionId: string, debugOtp?: string) => void }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -57,7 +57,7 @@ function PasswordStep({ lang, onSubmit }: { lang: 'fa' | 'en'; onSubmit: (sessio
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        onSubmit(data.sessionId);
+        onSubmit(data.sessionId, data.debugOtp);
       } else if (data.error === 'INVALID_PASSWORD') {
         setError(lang === 'fa' ? 'رمز عبور اشتباه است' : 'Incorrect password');
         setShake(true);
@@ -115,7 +115,7 @@ function PasswordStep({ lang, onSubmit }: { lang: 'fa' | 'en'; onSubmit: (sessio
 }
 
 // ─── Step 2: OTP Verification ───
-function OTPStep({ lang, sessionId, onSuccess, onBack }: { lang: 'fa' | 'en'; sessionId: string; onSuccess: () => void; onBack: () => void }) {
+function OTPStep({ lang, sessionId, onSuccess, onBack, debugOtp }: { lang: 'fa' | 'en'; sessionId: string; onSuccess: () => void; onBack: () => void; debugOtp?: string }) {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -180,6 +180,7 @@ function OTPStep({ lang, sessionId, onSuccess, onBack }: { lang: 'fa' | 'en'; se
           </div>
           <h1 className="text-xl font-semibold">{lang === 'fa' ? 'تایید هویت دو مرحله‌ای' : 'Two-Factor Authentication'}</h1>
           <p className="text-sm text-muted-foreground text-center">{lang === 'fa' ? 'کد ۶ رقمی ارسال شده به ایمیل خود را وارد کنید' : 'Enter the 6-digit code sent to your email'}</p>
+          {debugOtp && <p className="text-lg font-mono font-bold text-primary tracking-[0.3em] text-center">{debugOtp}</p>}
         </div>
         <div className="flex flex-col items-center gap-6">
           <InputOTP maxLength={6} value={otp} onChange={setOtp} dir="ltr">
@@ -220,13 +221,14 @@ export function AdminPanel() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handlePasswordSuccess = (sessionId: string) => { setOtpSessionId(sessionId); setStep('otp'); };
+  const [debugOtp, setDebugOtp] = useState('');
+  const handlePasswordSuccess = (sessionId: string, otp?: string) => { setOtpSessionId(sessionId); setDebugOtp(otp || ''); setStep('otp'); };
   const handleOTPSuccess = () => { setStep('dashboard'); sessionStorage.setItem('admin-auth', 'true'); };
   const handleBackToPassword = () => { setStep('password'); setOtpSessionId(''); };
   const handleLogout = () => { sessionStorage.removeItem('admin-auth'); setStep('password'); setOtpSessionId(''); setView('home'); };
 
   if (step === 'password') return <PasswordStep lang={lang} onSubmit={handlePasswordSuccess} />;
-  if (step === 'otp') return <OTPStep lang={lang} sessionId={otpSessionId} onSuccess={handleOTPSuccess} onBack={handleBackToPassword} />;
+  if (step === 'otp') return <OTPStep lang={lang} sessionId={otpSessionId} onSuccess={handleOTPSuccess} onBack={handleBackToPassword} debugOtp={debugOtp} />;
 
   const isRtl = lang === 'fa';
   const currentView = view as string;

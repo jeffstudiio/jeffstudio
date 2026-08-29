@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       // In dev mode, still proceed even if email "fails"
       return NextResponse.json({ success: true, sessionId })
     }
-    return NextResponse.json({ success: true, sessionId })
+    return NextResponse.json({ success: true, sessionId, debugOtp: otp })
   } catch (err) {
     console.error('Send OTP error:', err)
     return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
