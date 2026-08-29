@@ -36,7 +36,6 @@ const navItems: NavItem[] = [
   { view: 'admin-maintenance', fa: 'به‌روزرسانی', en: 'Updates', icon: <Wrench size={18} /> },
 ];
 
-// ─── Step 1: Password ───
 function PasswordStep({ lang, onSubmit }: { lang: 'fa' | 'en'; onSubmit: (sessionId: string, debugOtp?: string) => void }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -102,20 +101,12 @@ function PasswordStep({ lang, onSubmit }: { lang: 'fa' | 'en'; onSubmit: (sessio
             {loading ? (lang === 'fa' ? 'در حال ارسال...' : 'Sending...') : (lang === 'fa' ? 'ادامه' : 'Continue')}
           </Button>
         </form>
-        <style jsx>{`
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-8px); }
-            40%, 80% { transform: translateX(8px); }
-          }
-        `}</style>
       </div>
     </div>
   );
 }
 
-// ─── Step 2: OTP Verification ───
-function OTPStep({ lang, sessionId, onSuccess, onBack, debugOtp }: { lang: 'fa' | 'en'; sessionId: string; onSuccess: () => void; onBack: () => void; debugOtp?: string }) {
+function OTPStep({ lang, sessionId, onSuccess, onBack, debugOtp, onNewOtp }: { lang: 'fa' | 'en'; sessionId: string; onSuccess: () => void; onBack: () => void; debugOtp?: string; onNewOtp?: (otp: string) => void }) {
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -167,7 +158,11 @@ function OTPStep({ lang, sessionId, onSuccess, onBack, debugOtp }: { lang: 'fa' 
         body: JSON.stringify({ sessionId }),
       });
       const data = await res.json();
-      if (!data.success) onBack();
+      if (data.success) {
+        if (data.debugOtp && onNewOtp) onNewOtp(data.debugOtp);
+      } else {
+        onBack();
+      }
     } catch { onBack(); }
   };
 
@@ -198,19 +193,11 @@ function OTPStep({ lang, sessionId, onSuccess, onBack, debugOtp }: { lang: 'fa' 
             <Button variant="link" size="sm" onClick={onBack} className="text-muted-foreground">{lang === 'fa' ? 'بازگشت به ورود' : 'Back to login'}</Button>
           </div>
         </div>
-        <style jsx>{`
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-8px); }
-            40%, 80% { transform: translateX(8px); }
-          }
-        `}</style>
       </div>
     </div>
   );
 }
 
-// ─── Main Admin Panel ───
 export function AdminPanel() {
   const { view, lang, setView, setCategories, setProjects } = useAppStore();
   const [step, setStep] = useState<'password' | 'otp' | 'dashboard'>(() => {
@@ -220,7 +207,6 @@ export function AdminPanel() {
   const [otpSessionId, setOtpSessionId] = useState('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   const [debugOtp, setDebugOtp] = useState('');
   const handlePasswordSuccess = (sessionId: string, otp?: string) => { setOtpSessionId(sessionId); setDebugOtp(otp || ''); setStep('otp'); };
   const handleOTPSuccess = () => { setStep('dashboard'); sessionStorage.setItem('admin-auth', 'true'); };
@@ -228,7 +214,7 @@ export function AdminPanel() {
   const handleLogout = () => { sessionStorage.removeItem('admin-auth'); setStep('password'); setOtpSessionId(''); setView('home'); };
 
   if (step === 'password') return <PasswordStep lang={lang} onSubmit={handlePasswordSuccess} />;
-  if (step === 'otp') return <OTPStep lang={lang} sessionId={otpSessionId} onSuccess={handleOTPSuccess} onBack={handleBackToPassword} debugOtp={debugOtp} />;
+  if (step === 'otp') return <OTPStep lang={lang} sessionId={otpSessionId} onSuccess={handleOTPSuccess} onBack={handleBackToPassword} debugOtp={debugOtp} onNewOtp={(otp) => setDebugOtp(otp)} />;
 
   const isRtl = lang === 'fa';
   const currentView = view as string;
