@@ -59,7 +59,7 @@ export async function sendOTPEmail(email: string, otp: string): Promise<{ succes
     const { Resend } = await import('resend');
     const resend = new Resend(resendApiKey);
     const result = await resend.emails.send({
-      from: 'JEFF Studio <noreply@jeffstudio.ir>',
+      from: 'JEFF Studio <onboarding@resend.dev>',
       to: [email],
       subject: 'کد تایید ورود به پنل مدیریت | JEFF Studio Admin OTP',
       html: `
